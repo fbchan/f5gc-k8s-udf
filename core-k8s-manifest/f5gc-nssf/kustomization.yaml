@@ -1,0 +1,22 @@
+resources:
+  - 00_nssf-sa.yaml
+  - 01_nssf-rbac.yaml
+  - 02_nssf-configmap.yaml
+  - 03_nssf-service.yaml
+  - 04_nssf-deployment.yaml
+
+namespace: f5gc
+images:
+- name: ghcr.io/sumichaaan/free5gc-k8s/f5gc-nssf:v3.0.4
+  newName: reg.f5.local/free5gc-k8s/f5gc-nssf
+  newTag: v3.0.5
+
+secretGenerator:
+- name: f5gc-nssf-tls-secret
+  namespace: f5gc
+  files:
+  - cert/nssf.pem
+  - cert/nssf.key
+  type: "Opaque"
+generatorOptions:
+  disableNameSuffixHash: true

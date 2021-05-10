@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: f5gc-webui
+  labels:
+    app: f5gc-webui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: f5gc-webui
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: f5gc-webui
+    spec:
+      hostAliases:
+      - ip: "10.1.1.7"
+        hostnames:
+        - "reg.f5.local"
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+        - name: f5gc-webui
+          image: ghcr.io/sumichaaan/free5gc-k8s/f5gc-webui:v3.0.4
+          imagePullPolicy: IfNotPresent
+          #imagePullPolicy: Always
+          securityContext:
+            privileged: false
+          volumeMounts:
+            - name: f5gc-webui-config
+              mountPath: /free5gc/config
+          ports:
+            - containerPort: 5000
+              name: f5gc-webui
+              protocol: TCP
+        - name: tcpdump
+          image: corfr/tcpdump
+          command:
+            - /bin/sleep
+            - infinity
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: f5gc-webui-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: f5gc-webui-config
+          configMap:
+            name: f5gc-webui-config

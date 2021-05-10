@@ -1,0 +1,22 @@
+resources:
+  - 00_pcf-sa.yaml
+  - 01_pcf-rbac.yaml
+  - 02_pcf-configmap.yaml
+  - 03_pcf-service.yaml
+  - 04_pcf-deployment.yaml
+
+namespace: f5gc
+images:
+- name: ghcr.io/sumichaaan/free5gc-k8s/f5gc-pcf:v3.0.4
+  newName: reg.f5.local/free5gc-k8s/f5gc-pcf
+  newTag: v3.0.5
+
+secretGenerator:
+- name: f5gc-pcf-tls-secret
+  namespace: f5gc
+  files:
+  - cert/pcf.pem
+  - cert/pcf.key
+  type: "Opaque"
+generatorOptions:
+  disableNameSuffixHash: true

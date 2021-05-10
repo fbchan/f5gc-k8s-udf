@@ -1,0 +1,22 @@
+resources:
+  - 00_udm-sa.yaml
+  - 01_udm-rbac.yaml
+  - 02_udm-configmap.yaml
+  - 03_udm-service.yaml
+  - 04_udm-deployment.yaml
+
+namespace: f5gc
+images:
+- name: ghcr.io/sumichaaan/free5gc-k8s/f5gc-udm:v3.0.4
+  newName: reg.f5.local/free5gc-k8s/f5gc-udm
+  newTag: v3.0.5
+
+secretGenerator:
+- name: f5gc-udm-tls-secret
+  namespace: f5gc
+  files:
+  - cert/udm.pem
+  - cert/udm.key
+  type: "Opaque"
+generatorOptions:
+  disableNameSuffixHash: true

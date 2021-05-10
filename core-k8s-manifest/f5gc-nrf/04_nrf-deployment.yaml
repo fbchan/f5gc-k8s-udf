@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: f5gc-nrf
+  labels:
+    app: f5gc-nrf
+  annotations:
+    free5gc.org/nssi-id: '27394d25-dbf5-428e-8fc3-f5b2add67115'
+    free5gc.org/nsi-ids: '[
+        { "id": "4e6db941-47d6-4fce-9c71-f7eb35a75d03" },
+    ]'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: f5gc-nrf
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: f5gc-nrf
+    spec:
+      hostAliases:
+      - ip: "10.1.1.7"
+        hostnames:
+        - "reg.f5.local"
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+        - name: f5gc-nrf
+          image: ghcr.io/sumichaaan/free5gc-k8s/f5gc-nrf:v3.0.4
+          imagePullPolicy: IfNotPresent
+          #imagePullPolicy: Always
+          securityContext:
+            privileged: false
+          volumeMounts:
+            - name: f5gc-nrf-config
+              mountPath: /free5gc/config
+            - name: f5gc-nrf-cert
+              mountPath: /free5gc/support/TLS
+          ports:
+            - containerPort: 29510
+              name: f5gc-nrf
+              protocol: TCP
+        - name: tcpdump
+          image: corfr/tcpdump
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sleep
+            - infinity
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: f5gc-nrf-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: f5gc-nrf-cert
+          secret:
+            secretName: f5gc-nrf-tls-secret
+        - name: f5gc-nrf-config
+          configMap:
+            name: f5gc-nrf-config
